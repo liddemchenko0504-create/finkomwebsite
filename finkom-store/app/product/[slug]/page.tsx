@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { QuantitySelector } from "@/components/product/quantity-selector";
 import { AddToCartButton } from "@/components/cart/add-to-cart-button";
+import { ProductPurchasePanel } from "@/components/product/product-purchase-panel";
 
 function formatUnit(unit: string) {
   const units: Record<string, string> = {
@@ -130,16 +131,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
                 </div>
               ) : null}
             </div>
-<QuantitySelector
-  baseUnit={product.baseUnit}
-  saleUnit={product.saleUnit}
-  priceUnit={product.priceUnit}
-  price={product.price.toString()}
-  minQty={product.minQty.toString()}
-  stepQty={product.stepQty.toString()}
-  packSize={product.packSize?.toString()}
-/>
-            <AddToCartButton
+<ProductPurchasePanel
   productId={product.id}
   slug={product.slug}
   sku={product.sku}
@@ -149,6 +141,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
   saleUnit={product.saleUnit}
   priceUnit={product.priceUnit}
   minQty={product.minQty.toString()}
+  stepQty={product.stepQty.toString()}
   packSize={product.packSize?.toString()}
 />
 
