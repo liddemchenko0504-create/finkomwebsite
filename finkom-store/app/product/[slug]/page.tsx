@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
+import { QuantitySelector } from "@/components/product/quantity-selector";
 
 function formatUnit(unit: string) {
   const units: Record<string, string> = {
@@ -128,7 +129,15 @@ export default async function ProductPage({ params }: ProductPageProps) {
                 </div>
               ) : null}
             </div>
-
+<QuantitySelector
+  baseUnit={product.baseUnit}
+  saleUnit={product.saleUnit}
+  priceUnit={product.priceUnit}
+  price={product.price.toString()}
+  minQty={product.minQty.toString()}
+  stepQty={product.stepQty.toString()}
+  packSize={product.packSize?.toString()}
+/>
             <button className="mt-8 w-full rounded-xl bg-gray-950 px-5 py-4 text-sm font-semibold text-white">
               Додати в кошик
             </button>
