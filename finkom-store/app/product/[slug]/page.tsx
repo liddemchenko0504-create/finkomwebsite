@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { QuantitySelector } from "@/components/product/quantity-selector";
+import { AddToCartButton } from "@/components/cart/add-to-cart-button";
 
 function formatUnit(unit: string) {
   const units: Record<string, string> = {
@@ -138,9 +139,18 @@ export default async function ProductPage({ params }: ProductPageProps) {
   stepQty={product.stepQty.toString()}
   packSize={product.packSize?.toString()}
 />
-            <button className="mt-8 w-full rounded-xl bg-gray-950 px-5 py-4 text-sm font-semibold text-white">
-              Додати в кошик
-            </button>
+            <AddToCartButton
+  productId={product.id}
+  slug={product.slug}
+  sku={product.sku}
+  name={product.name}
+  price={product.price.toString()}
+  baseUnit={product.baseUnit}
+  saleUnit={product.saleUnit}
+  priceUnit={product.priceUnit}
+  minQty={product.minQty.toString()}
+  packSize={product.packSize?.toString()}
+/>
 
             <p className="mt-3 text-center text-xs text-gray-500">
               Кошик підключимо наступним кроком.
