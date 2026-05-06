@@ -52,6 +52,7 @@ model Product {
   isActive     Boolean  @default(true)
 
   images       ProductImage[]
+  orderItems   OrderItem[]
 
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
@@ -65,6 +66,79 @@ model ProductImage {
   url       String
   alt       String?
   sortOrder Int     @default(0)
+
+  createdAt DateTime @default(now())
+}
+enum OrderStatus {
+  NEW
+  CONFIRMED
+  RESERVED
+  COMPLETED
+  CANCELED
+}
+
+enum DeliveryType {
+  PICKUP
+  ADDRESS
+}
+
+model Order {
+  id              String          @id @default(cuid())
+  orderNumber     String          @unique
+  status          OrderStatus     @default(NEW)
+
+  customerName    String
+  customerPhone   String
+
+  deliveryType    DeliveryType
+  deliveryAddress DeliveryAddress?
+
+  total           Decimal
+
+  items           OrderItem[]
+
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+}
+
+model OrderItem {
+  id         String  @id @default(cuid())
+
+  orderId    String
+  order      Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  productId  String
+  product    Product @relation(fields: [productId], references: [id])
+
+  sku        String
+  name       String
+
+  price      Decimal
+  quantity   Decimal
+
+  baseUnit   Unit
+  saleUnit   Unit
+  priceUnit  Unit
+  packSize   Decimal?
+
+  lineTotal  Decimal
+
+  createdAt  DateTime @default(now())
+}
+
+model DeliveryAddress {
+  id        String @id @default(cuid())
+
+  orderId   String @unique
+  order     Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  city      String
+  street    String?
+  building  String?
+  apartment String?
+  entrance  String?
+  floor     String?
+  comment   String?
 
   createdAt DateTime @default(now())
 }

@@ -2,11 +2,7 @@
 
 import Link from "next/link";
 import { FormEvent, useEffect, useMemo, useState } from "react";
-import {
-  CartItem,
-  clearCart,
-  getCartItems,
-} from "@/lib/cart/cart-storage";
+import { CartItem, clearCart, getCartItems } from "@/lib/cart/cart-storage";
 
 const deliveryCities = [
   "Прилуки",
@@ -70,7 +66,7 @@ export function CheckoutClient() {
     }));
   }
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
     const orderPayload = {
@@ -92,7 +88,20 @@ export function CheckoutClient() {
       total,
     };
 
-    console.log("Order payload:", orderPayload);
+    const response = await fetch("/api/orders", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(orderPayload),
+    });
+
+    if (!response.ok) {
+  const errorText = await response.text();
+  console.error("Order create failed:", errorText);
+  alert(`Не вдалося створити замовлення: ${errorText}`);
+  return;
+}
 
     clearCart();
     setItems([]);
@@ -108,8 +117,8 @@ export function CheckoutClient() {
             Дякуємо! Замовлення прийнято
           </h1>
           <p className="mt-4 text-gray-600">
-            Поки що ми тільки тестуємо checkout. Наступним кроком збережемо
-            замовлення в базу та підготуємо передачу в 1С/BAS.
+            Замовлення збережено в базу. Наступним кроком підготуємо передачу
+            в 1С/BAS.
           </p>
 
           <Link
@@ -182,9 +191,7 @@ export function CheckoutClient() {
                   <input
                     required
                     value={form.phone}
-                    onChange={(event) =>
-                      updateField("phone", event.target.value)
-                    }
+                    onChange={(event) => updateField("phone", event.target.value)}
                     className="rounded-xl border border-gray-300 px-4 py-3 text-sm outline-none focus:border-gray-950"
                     placeholder="+380..."
                   />
@@ -237,9 +244,7 @@ export function CheckoutClient() {
                     </span>
                     <select
                       value={form.city}
-                      onChange={(event) =>
-                        updateField("city", event.target.value)
-                      }
+                      onChange={(event) => updateField("city", event.target.value)}
                       className="rounded-xl border border-gray-300 px-4 py-3 text-sm outline-none focus:border-gray-950"
                     >
                       {deliveryCities.map((city) => (
@@ -336,12 +341,6 @@ export function CheckoutClient() {
                       placeholder="Наприклад: дзвонити за 30 хв, потрібен підйом..."
                     />
                   </label>
-
-                  <div className="rounded-xl bg-gray-50 p-4 text-sm text-gray-600">
-                    Доставка по Прилуках рахується менеджером. Для
-                    великогабаритних товарів фінальна вартість буде уточнена
-                    після оформлення.
-                  </div>
                 </div>
               ) : null}
             </div>
