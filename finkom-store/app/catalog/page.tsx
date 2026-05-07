@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { AddToCartButton } from "@/components/cart/add-to-cart-button";
 import { prisma } from "@/lib/prisma";
 
 function formatUnit(unit: string) {
@@ -14,6 +13,37 @@ function formatUnit(unit: string) {
   };
 
   return units[unit] ?? unit;
+}
+
+function createCartHref(product: {
+  id: string;
+  slug: string;
+  sku: string;
+  name: string;
+  price: { toString(): string };
+  baseUnit: string;
+  saleUnit: string;
+  priceUnit: string;
+  minQty: { toString(): string };
+  packSize?: { toString(): string } | null;
+}) {
+  const params = new URLSearchParams({
+    add: product.id,
+    slug: product.slug,
+    sku: product.sku,
+    name: product.name,
+    price: product.price.toString(),
+    baseUnit: product.baseUnit,
+    saleUnit: product.saleUnit,
+    priceUnit: product.priceUnit,
+    quantity: product.minQty.toString(),
+  });
+
+  if (product.packSize) {
+    params.set("packSize", product.packSize.toString());
+  }
+
+  return `/cart?${params.toString()}`;
 }
 
 export default async function CatalogPage() {
@@ -104,20 +134,13 @@ export default async function CatalogPage() {
                 </div>
 
                 <div className="mt-5 grid gap-2">
-                  <AddToCartButton
-                    productId={product.id}
-                    slug={product.slug}
-                    sku={product.sku}
-                    name={product.name}
-                    price={product.price.toString()}
-                    baseUnit={product.baseUnit}
-                    saleUnit={product.saleUnit}
-                    priceUnit={product.priceUnit}
-                    minQty={product.minQty.toString()}
-                    packSize={product.packSize?.toString() ?? null}
-                    redirectToCart
+                  <Link
+                    href={createCartHref(product)}
+                    prefetch={false}
                     className="inline-flex w-full items-center justify-center rounded-xl bg-blue-700 px-4 py-3 text-sm font-semibold text-white hover:bg-blue-800"
-                  />
+                  >
+                    Додати в кошик
+                  </Link>
 
                   <Link
                     href={`/product/${product.slug}`}
