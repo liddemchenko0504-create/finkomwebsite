@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { AddToCartButton } from "@/components/cart/add-to-cart-button";
 import { prisma } from "@/lib/prisma";
 
 function formatUnit(unit: string) {
@@ -35,15 +36,24 @@ export default async function CatalogPage() {
 
   return (
     <main className="mx-auto max-w-6xl px-6 py-10">
-      <div className="mb-8">
-        <p className="text-sm font-medium text-gray-500">Каталог</p>
-        <h1 className="mt-2 text-3xl font-bold tracking-tight text-gray-950">
-          Будівельні матеріали
-        </h1>
-        <p className="mt-3 max-w-2xl text-gray-600">
-          Тестовий каталог товарів з підтримкою різних одиниць продажу:
-          штуки, м², упаковки та мішки.
-        </p>
+      <div className="mb-8 flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
+        <div>
+          <p className="text-sm font-medium text-gray-500">Каталог</p>
+          <h1 className="mt-2 text-3xl font-bold tracking-tight text-gray-950">
+            Будівельні матеріали
+          </h1>
+          <p className="mt-3 max-w-2xl text-gray-600">
+            Тестовий каталог товарів з підтримкою різних одиниць продажу:
+            штуки, м², упаковки та мішки.
+          </p>
+        </div>
+
+        <Link
+          href="/cart"
+          className="inline-flex justify-center rounded-xl border border-gray-300 px-5 py-3 text-sm font-semibold text-gray-800 hover:bg-gray-50"
+        >
+          Відкрити кошик
+        </Link>
       </div>
 
       <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
@@ -93,12 +103,29 @@ export default async function CatalogPage() {
                   </div>
                 </div>
 
-                <Link
-                  href={`/product/${product.slug}`}
-                  className="mt-5 inline-flex w-full items-center justify-center rounded-xl bg-gray-950 px-4 py-3 text-sm font-medium text-white"
-                >
-                  Дивитися товар
-                </Link>
+                <div className="mt-5 grid gap-2">
+                  <AddToCartButton
+                    productId={product.id}
+                    slug={product.slug}
+                    sku={product.sku}
+                    name={product.name}
+                    price={product.price.toString()}
+                    baseUnit={product.baseUnit}
+                    saleUnit={product.saleUnit}
+                    priceUnit={product.priceUnit}
+                    minQty={product.minQty.toString()}
+                    packSize={product.packSize?.toString() ?? null}
+                    redirectToCart
+                    className="inline-flex w-full items-center justify-center rounded-xl bg-blue-700 px-4 py-3 text-sm font-semibold text-white hover:bg-blue-800"
+                  />
+
+                  <Link
+                    href={`/product/${product.slug}`}
+                    className="inline-flex w-full items-center justify-center rounded-xl border border-gray-300 px-4 py-3 text-sm font-medium text-gray-800 hover:bg-gray-50"
+                  >
+                    Дивитися товар
+                  </Link>
+                </div>
               </div>
             </article>
           );
