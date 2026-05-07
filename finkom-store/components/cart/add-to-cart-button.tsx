@@ -1,6 +1,5 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { addCartItem } from "@/lib/cart/cart-storage";
 
@@ -34,7 +33,6 @@ export function AddToCartButton({
   redirectToCart = false,
 }: AddToCartButtonProps) {
   const [added, setAdded] = useState(false);
-  const router = useRouter();
 
   function handleAddToCart() {
     addCartItem({
@@ -51,7 +49,7 @@ export function AddToCartButton({
     });
 
     if (redirectToCart) {
-      router.push("/cart");
+      window.location.href = "/cart";
       return;
     }
 
