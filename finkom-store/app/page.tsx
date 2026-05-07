@@ -61,7 +61,7 @@ export default function FinkomLanding() {
             </div>
           </div>
           <nav className="hidden gap-8 text-sm font-bold text-slate-700 md:flex">
-            <a href="#catalog">Каталог</a><a href="#delivery">Доставка</a><a href="#offers">Акції</a><a href="#contacts">Контакти</a>
+            <a href="/catalog">Каталог</a><a href="#delivery">Доставка</a><a href="#offers">Акції</a><a href="#contacts">Контакти</a>
           </nav>
           <button onClick={() => setOpen(true)} className="rounded-2xl bg-blue-700 px-5 py-3 font-black text-white shadow-lg">Кошик{count ? ` (${count})` : ""}</button>
         </div>
@@ -111,7 +111,7 @@ export default function FinkomLanding() {
             <p className="mt-6 text-lg leading-8 text-slate-600">Каталог товарів, консультація спеціаліста, самовивіз із магазину та доставка на об’єкт.</p>
             <div className="mt-8 flex max-w-2xl gap-3 rounded-3xl bg-white p-3 shadow-2xl shadow-slate-200">
               <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Знайти: фарба, клей, сантехніка..." className="flex-1 rounded-2xl bg-slate-100 px-4 py-3 outline-none" />
-              <a href="#catalog" className="rounded-2xl bg-amber-400 px-6 py-3 font-black">Підібрати товар</a>
+              <a href="/catalog" className="rounded-2xl bg-amber-400 px-6 py-3 font-black">Підібрати товар</a>
             </div>
             <div className="mt-8 grid max-w-2xl grid-cols-3 gap-3">
               <div className="rounded-2xl border bg-white p-4"><b className="text-2xl text-blue-800">5 000+</b><div className="text-sm text-slate-500">позицій</div></div>
@@ -138,9 +138,12 @@ export default function FinkomLanding() {
       </section>
 
       <section id="catalog" className="mx-auto max-w-7xl px-4 py-16 lg:px-8">
-        <h2 className="text-4xl font-black">Каталог товарів</h2>
+        <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+          <div><h2 className="text-4xl font-black">Каталог товарів</h2><p className="mt-3 text-slate-600">Швидкі категорії на головній. Повний каталог відкривається окремою сторінкою.</p></div>
+          <a href="/catalog" className="w-fit rounded-2xl bg-slate-900 px-5 py-3 font-black text-white">Весь каталог</a>
+        </div>
         <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {filteredCategories.map((category) => <div key={category} className="rounded-3xl border bg-white p-6 text-xl font-black shadow-sm">{category}</div>)}
+          {filteredCategories.map((category) => <a href="/catalog" key={category} className="rounded-3xl border bg-white p-6 text-xl font-black shadow-sm hover:border-blue-300">{category}</a>)}
         </div>
       </section>
 
