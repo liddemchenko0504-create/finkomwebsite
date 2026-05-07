@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { MouseEvent, useState } from "react";
 import { addCartItem } from "@/lib/cart/cart-storage";
 
 type AddToCartButtonProps = {
@@ -34,7 +34,7 @@ export function AddToCartButton({
 }: AddToCartButtonProps) {
   const [added, setAdded] = useState(false);
 
-  function handleAddToCart() {
+  function addItem() {
     addCartItem({
       productId,
       slug,
@@ -47,12 +47,10 @@ export function AddToCartButton({
       quantity: Number(minQty),
       packSize,
     });
+  }
 
-    if (redirectToCart) {
-      window.location.href = "/cart";
-      return;
-    }
-
+  function handleButtonClick() {
+    addItem();
     setAdded(true);
 
     window.setTimeout(() => {
@@ -60,8 +58,22 @@ export function AddToCartButton({
     }, 1500);
   }
 
+  function handleLinkClick(event: MouseEvent<HTMLAnchorElement>) {
+    event.preventDefault();
+    addItem();
+    window.location.assign("/cart");
+  }
+
+  if (redirectToCart) {
+    return (
+      <a href="/cart" onClick={handleLinkClick} className={className}>
+        Додати в кошик
+      </a>
+    );
+  }
+
   return (
-    <button type="button" onClick={handleAddToCart} className={className}>
+    <button type="button" onClick={handleButtonClick} className={className}>
       {added ? "Додано в кошик" : "Додати в кошик"}
     </button>
   );
