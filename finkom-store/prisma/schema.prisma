@@ -71,6 +71,7 @@ model ProductImage {
 }
 enum OrderStatus {
   NEW
+  EXPORTED
   CONFIRMED
   RESERVED
   COMPLETED
