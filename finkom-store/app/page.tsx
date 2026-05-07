@@ -1,242 +1,152 @@
 "use client";
 
-import React, { ReactNode, useMemo, useState } from "react";
-import { motion } from "framer-motion";
-
-type IconProps = {
-  children?: ReactNode;
-  size?: number;
-  className?: string;
-  fill?: string;
-};
-
-const Icon = ({ children, size = 20, className = "" }: IconProps) => (
-  <span
-    className={`inline-flex items-center justify-center leading-none ${className}`}
-    style={{ width: size, height: size, fontSize: size }}
-    aria-hidden="true"
-  >
-    {children}
-  </span>
-);
-
-const Search = (props: IconProps) => <Icon {...props}>⌕</Icon>;
-const Menu = (props: IconProps) => <Icon {...props}>☰</Icon>;
-const ShoppingCart = (props: IconProps) => <Icon {...props}>🛒</Icon>;
-const MapPin = (props: IconProps) => <Icon {...props}>📍</Icon>;
-const Phone = (props: IconProps) => <Icon {...props}>☎</Icon>;
-const Truck = (props: IconProps) => <Icon {...props}>🚚</Icon>;
-const ShieldCheck = (props: IconProps) => <Icon {...props}>✓</Icon>;
-const Hammer = (props: IconProps) => <Icon {...props}>🔨</Icon>;
-const Paintbrush = (props: IconProps) => <Icon {...props}>🖌️</Icon>;
-const Bath = (props: IconProps) => <Icon {...props}>🚿</Icon>;
-const Cable = (props: IconProps) => <Icon {...props}>🔌</Icon>;
-const DoorOpen = (props: IconProps) => <Icon {...props}>🚪</Icon>;
-const Star = (props: IconProps) => <Icon {...props}>★</Icon>;
-const ArrowRight = (props: IconProps) => <Icon {...props}>→</Icon>;
-const Clock = (props: IconProps) => <Icon {...props}>⏱</Icon>;
-
-const categories = [
-  { title: "Сухі суміші", icon: Hammer, items: "цемент, клей, шпаклівка" },
-  { title: "Фарби та декор", icon: Paintbrush, items: "фарби, лаки, ґрунтовки" },
-  { title: "Сантехніка", icon: Bath, items: "змішувачі, труби, ванни" },
-  { title: "Електрика", icon: Cable, items: "кабелі, автомати, розетки" },
-  { title: "Двері та вікна", icon: DoorOpen, items: "двері, фурнітура, підвіконня" },
-  { title: "Інструменти", icon: Hammer, items: "ручний та електроінструмент" },
-];
+import { useEffect, useMemo, useState } from "react";
 
 const products = [
-  { name: "Клей для плитки універсальний", price: "від 189 грн", badge: "Хіт" },
-  { name: "Фарба інтер’єрна матова", price: "від 620 грн", badge: "Акція" },
-  { name: "Гіпсокартон вологостійкий", price: "від 312 грн", badge: "В наявності" },
+  { id: "tile-adhesive", name: "Клей для плитки універсальний", price: 189, badge: "Хіт" },
+  { id: "paint-matte", name: "Фарба інтер’єрна матова", price: 620, badge: "Акція" },
+  { id: "drywall", name: "Гіпсокартон вологостійкий", price: 312, badge: "В наявності" },
 ];
+
+const categories = ["Сухі суміші", "Фарби", "Сантехніка", "Електрика", "Двері", "Інструменти"];
+const CART_KEY = "finkom-cart";
+
+type Product = (typeof products)[number];
+type CartItem = Pick<Product, "id" | "name" | "price"> & { quantity: number };
 
 export default function FinkomLanding() {
   const [query, setQuery] = useState("");
-  const filtered = useMemo(() => {
-    return categories.filter((c) => `${c.title} ${c.items}`.toLowerCase().includes(query.toLowerCase()));
-  }, [query]);
+  const [cart, setCart] = useState<CartItem[]>([]);
+  const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    const saved = localStorage.getItem(CART_KEY);
+    if (saved) setCart(JSON.parse(saved));
+  }, []);
+
+  const filteredCategories = useMemo(
+    () => categories.filter((item) => item.toLowerCase().includes(query.toLowerCase())),
+    [query]
+  );
+
+  const count = cart.reduce((sum, item) => sum + item.quantity, 0);
+  const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+
+  const saveCart = (next: CartItem[]) => {
+    setCart(next);
+    localStorage.setItem(CART_KEY, JSON.stringify(next));
+  };
+
+  const addToCart = (product: Product) => {
+    const next = cart.some((item) => item.id === product.id)
+      ? cart.map((item) => item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item)
+      : [...cart, { id: product.id, name: product.name, price: product.price, quantity: 1 }];
+    saveCart(next);
+    setOpen(true);
+  };
+
+  const changeQuantity = (id: string, quantity: number) => {
+    saveCart(cart.map((item) => item.id === id ? { ...item, quantity } : item).filter((item) => item.quantity > 0));
+  };
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-950">
-      <header className="sticky top-0 z-50 border-b border-slate-200 bg-white/90 backdrop-blur-xl">
+    <main className="min-h-screen bg-slate-50 text-slate-950">
+      <header className="sticky top-0 z-40 border-b bg-white/90 backdrop-blur">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 lg:px-8">
           <div className="flex items-center gap-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-blue-700 text-xl font-black text-white shadow-lg shadow-blue-700/20">Ф</div>
+            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-blue-700 text-xl font-black text-white">Ф</div>
             <div>
-              <div className="text-xl font-black uppercase tracking-tight text-blue-800">Фінком</div>
-              <div className="text-xs font-medium text-slate-500">магазин будівельних матеріалів</div>
+              <div className="text-xl font-black uppercase text-blue-800">Фінком</div>
+              <div className="text-xs text-slate-500">магазин будівельних матеріалів</div>
             </div>
           </div>
-
-          <nav className="hidden items-center gap-8 text-sm font-semibold text-slate-700 lg:flex">
-            <a href="#catalog" className="hover:text-blue-700">Каталог</a>
-            <a href="#delivery" className="hover:text-blue-700">Доставка</a>
-            <a href="#offers" className="hover:text-blue-700">Акції</a>
-            <a href="#contacts" className="hover:text-blue-700">Контакти</a>
+          <nav className="hidden gap-8 text-sm font-bold text-slate-700 md:flex">
+            <a href="#catalog">Каталог</a><a href="#delivery">Доставка</a><a href="#offers">Акції</a><a href="#contacts">Контакти</a>
           </nav>
-
-          <div className="hidden items-center gap-3 lg:flex">
-            <a href="tel:+380000000000" className="flex items-center gap-2 rounded-2xl border border-slate-200 px-4 py-2 text-sm font-bold text-slate-800 hover:border-blue-300">
-              <Phone size={17} /> +38 (000) 000-00-00
-            </a>
-            <button className="flex items-center gap-2 rounded-2xl bg-blue-700 px-4 py-2 text-sm font-bold text-white shadow-lg shadow-blue-700/25 hover:bg-blue-800">
-              <ShoppingCart size={17} /> Кошик
-            </button>
-          </div>
-
-          <button className="rounded-xl border border-slate-200 p-2 lg:hidden"><Menu /></button>
+          <button onClick={() => setOpen(true)} className="rounded-2xl bg-blue-700 px-5 py-3 font-black text-white shadow-lg">Кошик{count ? ` (${count})` : ""}</button>
         </div>
       </header>
 
-      <main>
-        <section className="relative overflow-hidden bg-white">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(29,78,216,0.14),transparent_30%),radial-gradient(circle_at_80%_0%,rgba(245,158,11,0.16),transparent_26%)]" />
-          <div className="relative mx-auto grid max-w-7xl gap-10 px-4 py-16 lg:grid-cols-[1.05fr_0.95fr] lg:px-8 lg:py-24">
-            <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} className="flex flex-col justify-center">
-              <div className="mb-5 inline-flex w-fit items-center gap-2 rounded-full border border-blue-100 bg-blue-50 px-4 py-2 text-sm font-bold text-blue-800">
-                <ShieldCheck size={17} /> Все для ремонту, будівництва і дому
-              </div>
-              <h1 className="max-w-3xl text-4xl font-black tracking-tight text-slate-950 md:text-6xl">
-                Будматеріали поруч — швидко, зрозуміло, без зайвого клопоту.
-              </h1>
-              <p className="mt-6 max-w-2xl text-lg leading-8 text-slate-600">
-                Каталог товарів, консультація спеціаліста, самовивіз із магазину та доставка на об’єкт. Дизайн зроблений у стилі реального будівельного магазину: синя вивіска, світлий фасад, практичність і довіра.
-              </p>
-
-              <div className="mt-8 grid max-w-2xl grid-cols-1 gap-3 sm:grid-cols-3">
-  <div className="rounded-2xl border border-slate-200 bg-white p-4">
-    <div className="text-2xl font-black text-blue-800">5 000+</div>
-    <div className="text-sm text-slate-500">позицій у каталозі</div>
-  </div>
-
-  <div className="rounded-2xl border border-slate-200 bg-white p-4">
-    <div className="text-2xl font-black text-blue-800">1 день</div>
-    <div className="text-sm text-slate-500">швидка доставка</div>
-  </div>
-
-  <div className="rounded-2xl border border-slate-200 bg-white p-4">
-    <div className="text-2xl font-black text-blue-800">15 хв</div>
-    <div className="text-sm text-slate-500">консультація</div>
-  </div>
-</div>
-            </motion.div>
-
-            <motion.div initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.7, delay: 0.1 }} className="relative">
-              <div className="rounded-[2rem] bg-slate-900 p-3 shadow-2xl shadow-blue-900/20">
-                <div className="rounded-[1.5rem] bg-gradient-to-br from-slate-100 to-white p-5">
-                  <div className="overflow-hidden rounded-[1.25rem] border border-slate-200 bg-white">
-                    <div className="h-56 bg-[linear-gradient(135deg,#e2e8f0_0%,#f8fafc_40%,#dbeafe_100%)] p-6">
-                      <div className="flex h-full flex-col justify-between rounded-3xl border border-white/80 bg-white/45 p-5 backdrop-blur-sm">
-                        <div className="flex justify-end"><div className="rounded-full bg-blue-700 px-5 py-2 text-2xl font-black text-white shadow-lg">Фінком</div></div>
-                        <div className="grid grid-cols-3 gap-3">
-                          <div className="h-16 rounded-xl bg-slate-300" />
-                          <div className="h-16 rounded-xl bg-slate-200" />
-                          <div className="h-16 rounded-xl bg-slate-300" />
+      {open && (
+        <div className="fixed inset-0 z-50 bg-slate-950/40 p-4" onClick={() => setOpen(false)}>
+          <aside className="ml-auto flex h-full max-w-md flex-col rounded-3xl bg-white p-5 shadow-2xl" onClick={(event) => event.stopPropagation()}>
+            <div className="flex items-center justify-between border-b pb-4">
+              <div><div className="text-2xl font-black">Кошик</div><div className="text-sm text-slate-500">{count} товарів</div></div>
+              <button onClick={() => setOpen(false)} className="rounded-xl border px-3 py-2 font-bold">Закрити</button>
+            </div>
+            {cart.length === 0 ? <div className="flex flex-1 items-center justify-center text-slate-500">Кошик порожній</div> : (
+              <>
+                <div className="flex-1 space-y-3 overflow-auto py-4">
+                  {cart.map((item) => (
+                    <div key={item.id} className="rounded-2xl border bg-slate-50 p-4">
+                      <div className="font-black">{item.name}</div>
+                      <div className="text-sm font-bold text-blue-800">{item.price} грн / шт.</div>
+                      <div className="mt-3 flex items-center justify-between">
+                        <div className="rounded-xl border bg-white">
+                          <button onClick={() => changeQuantity(item.id, item.quantity - 1)} className="px-3 py-2 font-black">-</button>
+                          <span className="inline-block min-w-8 text-center font-black">{item.quantity}</span>
+                          <button onClick={() => changeQuantity(item.id, item.quantity + 1)} className="px-3 py-2 font-black">+</button>
                         </div>
+                        <div className="font-black">{item.price * item.quantity} грн</div>
                       </div>
                     </div>
-                    <div className="grid gap-3 p-5 sm:grid-cols-3">
-                      {products.map((p) => (
-                        <div key={p.name} className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                          <div className="mb-3 inline-flex rounded-full bg-amber-100 px-3 py-1 text-xs font-black text-amber-700">{p.badge}</div>
-                          <div className="min-h-12 text-sm font-bold text-slate-800">{p.name}</div>
-                          <div className="mt-3 text-lg font-black text-blue-800">{p.price}</div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
+                  ))}
                 </div>
-              </div>
-              <div className="absolute -bottom-6 -left-4 rounded-3xl bg-white p-5 shadow-xl shadow-slate-200">
-                <div className="flex items-center gap-3">
-                  <div className="rounded-2xl bg-green-100 p-3 text-green-700"><Truck /></div>
-                  <div><div className="font-black">Доставка на об’єкт</div><div className="text-sm text-slate-500">місто та район</div></div>
+                <div className="border-t pt-4">
+                  <div className="flex justify-between text-xl font-black"><span>Разом</span><span>{total} грн</span></div>
+                  <button className="mt-4 w-full rounded-2xl bg-amber-400 px-5 py-3 font-black">Оформити замовлення</button>
+                  <button onClick={() => saveCart([])} className="mt-2 w-full rounded-2xl border px-5 py-3 font-black">Очистити кошик</button>
                 </div>
-              </div>
-            </motion.div>
-          </div>
-        </section>
+              </>
+            )}
+          </aside>
+        </div>
+      )}
 
-        <section id="catalog" className="mx-auto max-w-7xl px-4 py-16 lg:px-8">
-          <div className="mb-8 flex flex-col justify-between gap-4 md:flex-row md:items-end">
-            <div>
-              <h2 className="text-3xl font-black tracking-tight md:text-4xl">Каталог товарів</h2>
-              <p className="mt-3 max-w-2xl text-slate-600">Зрозумілі категорії для швидкого вибору. Основний акцент — на практичності, наявності та консультації.</p>
-            </div>
-            <button className="flex w-fit items-center gap-2 rounded-2xl bg-slate-900 px-5 py-3 font-bold text-white hover:bg-slate-800">Весь каталог <ArrowRight size={18} /></button>
-          </div>
-
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {filtered.map((category) => {
-              const Icon = category.icon;
-              return (
-                <motion.div whileHover={{ y: -4 }} key={category.title} className="group rounded-3xl border border-slate-200 bg-white p-6 shadow-sm transition hover:shadow-xl hover:shadow-slate-200">
-                  <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-50 text-blue-700 group-hover:bg-blue-700 group-hover:text-white">
-                    <Icon size={27} />
-                  </div>
-                  <h3 className="text-xl font-black">{category.title}</h3>
-                  <p className="mt-2 text-sm text-slate-500">{category.items}</p>
-                  <div className="mt-6 flex items-center gap-2 text-sm font-black text-blue-700">Перейти <ArrowRight size={16} /></div>
-                </motion.div>
-              );
-            })}
-          </div>
-        </section>
-
-        <section id="delivery" className="bg-slate-900 py-16 text-white">
-          <div className="mx-auto grid max-w-7xl gap-6 px-4 lg:grid-cols-3 lg:px-8">
-            <div className="rounded-3xl bg-white/10 p-6 backdrop-blur">
-              <Truck className="mb-4 text-amber-300" />
-              <h3 className="text-xl font-black">Доставка</h3>
-              <p className="mt-2 text-slate-300">Привеземо матеріали на об’єкт або підготуємо замовлення для самовивозу.</p>
-            </div>
-            <div className="rounded-3xl bg-white/10 p-6 backdrop-blur">
-              <MapPin className="mb-4 text-amber-300" />
-              <h3 className="text-xl font-black">Магазин поруч</h3>
-              <p className="mt-2 text-slate-300">Вкажіть адресу, графік роботи та карту — клієнт швидко знайде вас.</p>
-            </div>
-            <div className="rounded-3xl bg-white/10 p-6 backdrop-blur">
-              <Clock className="mb-4 text-amber-300" />
-              <h3 className="text-xl font-black">Швидке замовлення</h3>
-              <p className="mt-2 text-slate-300">Форма заявки: ім’я, телефон, список матеріалів або фото з об’єкта.</p>
-            </div>
-          </div>
-        </section>
-
-        <section id="offers" className="mx-auto max-w-7xl px-4 py-16 lg:px-8">
-          <div className="rounded-[2rem] bg-blue-700 p-8 text-white md:p-12">
-            <div className="grid gap-8 md:grid-cols-[1fr_auto] md:items-center">
-              <div>
-                <div className="mb-3 flex items-center gap-2 text-amber-200"><Star fill="currentColor" size={18} /> Спеціальна пропозиція</div>
-                <h2 className="text-3xl font-black md:text-5xl">Знижки для майстрів та будівельних бригад</h2>
-                <p className="mt-4 max-w-2xl text-blue-100">Додайте блок з умовами партнерства, оптовими цінами і швидким зв’язком з менеджером.</p>
-              </div>
-              <button className="rounded-2xl bg-amber-400 px-7 py-4 font-black text-slate-950 hover:bg-amber-300">Отримати консультацію</button>
-            </div>
-          </div>
-        </section>
-      </main>
-
-      <footer id="contacts" className="border-t border-slate-200 bg-white">
-        <div className="mx-auto grid max-w-7xl gap-6 px-4 py-10 md:grid-cols-3 lg:px-8">
+      <section className="bg-white">
+        <div className="mx-auto grid max-w-7xl gap-10 px-4 py-20 lg:grid-cols-2 lg:px-8">
           <div>
-            <div className="text-2xl font-black text-blue-800">Фінком</div>
-            <p className="mt-2 text-sm text-slate-500">Будівельні матеріали, товари для ремонту та дому.</p>
+            <div className="mb-5 inline-flex rounded-full bg-blue-50 px-4 py-2 text-sm font-black text-blue-800">Все для ремонту, будівництва і дому</div>
+            <h1 className="text-5xl font-black tracking-tight md:text-6xl">Будматеріали поруч — швидко, зрозуміло, без зайвого клопоту.</h1>
+            <p className="mt-6 text-lg leading-8 text-slate-600">Каталог товарів, консультація спеціаліста, самовивіз із магазину та доставка на об’єкт.</p>
+            <div className="mt-8 flex max-w-2xl gap-3 rounded-3xl bg-white p-3 shadow-2xl shadow-slate-200">
+              <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Знайти: фарба, клей, сантехніка..." className="flex-1 rounded-2xl bg-slate-100 px-4 py-3 outline-none" />
+              <a href="#catalog" className="rounded-2xl bg-amber-400 px-6 py-3 font-black">Підібрати товар</a>
+            </div>
+            <div className="mt-8 grid max-w-2xl grid-cols-3 gap-3">
+              <div className="rounded-2xl border bg-white p-4"><b className="text-2xl text-blue-800">5 000+</b><div className="text-sm text-slate-500">позицій</div></div>
+              <div className="rounded-2xl border bg-white p-4"><b className="text-2xl text-blue-800">1 день</b><div className="text-sm text-slate-500">доставка</div></div>
+              <div className="rounded-2xl border bg-white p-4"><b className="text-2xl text-blue-800">15 хв</b><div className="text-sm text-slate-500">консультація</div></div>
+            </div>
           </div>
-          <div className="text-sm text-slate-600">
-            <div className="font-black text-slate-900">Контакти</div>
-            <div className="mt-2">+38 (000) 000-00-00</div>
-            <div>info@finkom.ua</div>
-          </div>
-          <div className="text-sm text-slate-600">
-            <div className="font-black text-slate-900">Адреса</div>
-            <div className="mt-2">Ваше місто, ваша вулиця</div>
-            <div>Пн–Сб: 09:00–18:00</div>
+          <div className="rounded-[2rem] bg-slate-900 p-4 shadow-2xl">
+            <div className="rounded-[1.5rem] bg-white p-6">
+              <div className="mb-5 rounded-3xl bg-blue-50 p-8 text-right"><span className="rounded-full bg-blue-700 px-6 py-3 text-2xl font-black text-white">Фінком</span></div>
+              <div className="grid gap-3 sm:grid-cols-3">
+                {products.map((product) => (
+                  <div key={product.id} className="rounded-2xl border bg-slate-50 p-4">
+                    <div className="mb-3 inline-flex rounded-full bg-amber-100 px-3 py-1 text-xs font-black text-amber-700">{product.badge}</div>
+                    <div className="min-h-12 text-sm font-bold">{product.name}</div>
+                    <div className="mt-3 text-lg font-black text-blue-800">від {product.price} грн</div>
+                    <button onClick={() => addToCart(product)} className="mt-4 w-full rounded-xl bg-blue-700 px-4 py-2 text-sm font-black text-white">В кошик</button>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
-      </footer>
-    </div>
+      </section>
+
+      <section id="catalog" className="mx-auto max-w-7xl px-4 py-16 lg:px-8">
+        <h2 className="text-4xl font-black">Каталог товарів</h2>
+        <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {filteredCategories.map((category) => <div key={category} className="rounded-3xl border bg-white p-6 text-xl font-black shadow-sm">{category}</div>)}
+        </div>
+      </section>
+
+      <section id="delivery" className="bg-slate-900 py-16 text-white"><div className="mx-auto max-w-7xl px-4 lg:px-8"><h2 className="text-3xl font-black">Доставка на об’єкт і самовивіз</h2><p className="mt-3 text-slate-300">Привеземо матеріали або підготуємо замовлення у магазині.</p></div></section>
+      <section id="offers" className="mx-auto max-w-7xl px-4 py-16 lg:px-8"><div className="rounded-[2rem] bg-blue-700 p-10 text-white"><h2 className="text-4xl font-black">Знижки для майстрів та бригад</h2></div></section>
+      <footer id="contacts" className="border-t bg-white py-10"><div className="mx-auto max-w-7xl px-4 text-sm text-slate-600 lg:px-8"><b className="text-blue-800">Фінком</b><div>+38 (000) 000-00-00</div><div>info@finkom.ua</div></div></footer>
+    </main>
   );
 }
-
