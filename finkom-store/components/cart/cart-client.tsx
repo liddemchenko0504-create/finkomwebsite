@@ -1,9 +1,11 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import {
   CartItem,
+  addCartItem,
   getCartItems,
   removeCartItem,
   saveCartItems,
@@ -29,10 +31,33 @@ function formatNumber(value: number) {
 
 export function CartClient() {
   const [items, setItems] = useState<CartItem[]>([]);
+  const router = useRouter();
+  const searchParams = useSearchParams();
 
   useEffect(() => {
+    const productId = searchParams.get("add");
+
+    if (productId) {
+      addCartItem({
+        productId,
+        slug: searchParams.get("slug") ?? "",
+        sku: searchParams.get("sku") ?? "",
+        name: searchParams.get("name") ?? "Товар",
+        price: searchParams.get("price") ?? "0",
+        baseUnit: searchParams.get("baseUnit") ?? "PCS",
+        saleUnit: searchParams.get("saleUnit") ?? "PCS",
+        priceUnit: searchParams.get("priceUnit") ?? "PCS",
+        quantity: Number(searchParams.get("quantity") ?? "1"),
+        packSize: searchParams.get("packSize"),
+      });
+
+      setItems(getCartItems());
+      router.replace("/cart");
+      return;
+    }
+
     setItems(getCartItems());
-  }, []);
+  }, [router, searchParams]);
 
   const total = useMemo(() => {
     return items.reduce((sum, item) => {
